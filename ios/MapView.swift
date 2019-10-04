@@ -46,8 +46,8 @@ class MapView: UIView {
     }
     let camera = GMSCameraPosition.camera(withLatitude: selectedLatitude, longitude: selectedLongitude, zoom: zoomLevel.floatValue)
     let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
-    mapView.isMyLocationEnabled = true
-    mapView.settings.myLocationButton = true
+//    mapView.isMyLocationEnabled = true
+//    mapView.settings.myLocationButton = true
     
     mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     mapView.delegate = self
@@ -75,8 +75,8 @@ extension MapView: GMSMapViewDelegate {
     marker?.map = nil
     marker = nil
     let changedPosition = CLLocationCoordinate2DMake(position.target.latitude, position.target.longitude)
-    let markerImage = UIImage(named: "sbox_pin")!.withRenderingMode(.alwaysTemplate)
-    let markerView = UIImageView(image: markerImage)
+//    let markerImage = UIImage(named: "sbox_pin")!.withRenderingMode(.alwaysTemplate)
+//    let markerView = UIImageView(image: markerImage)
     marker = GMSMarker(position: changedPosition)
 //    marker?.iconView = markerView
 //    marker?.iconView?.sizeToFit()
