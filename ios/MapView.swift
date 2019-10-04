@@ -38,29 +38,30 @@ class MapView: UIView {
   }()
   
   lazy var map: GMSMapView = {
-    let camera = GMSCameraPosition.camera(withLatitude: defaultLatitude.doubleValue, longitude: defaultLongitude.doubleValue, zoom: zoomLevel.floatValue)
+    var selectedLatitude = defaultLatitude.doubleValue
+    var selectedLongitude = defaultLongitude.doubleValue
+    if locationManager.location != nil {
+      selectedLatitude = locationManager.location!.coordinate.latitude
+      selectedLongitude = locationManager.location!.coordinate.longitude
+    }
+    let camera = GMSCameraPosition.camera(withLatitude: selectedLatitude, longitude: selectedLongitude, zoom: zoomLevel.floatValue)
     let mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
     mapView.isMyLocationEnabled = true
     mapView.settings.myLocationButton = true
+    
     mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
     mapView.delegate = self
     return mapView
   }()
   
-  func updateLocation(camera: GMSCameraPosition) {
+  func updateCurrentLocation(latitude: NSNumber, longitude: NSNumber) {
+    let camera = GMSCameraPosition.camera(withLatitude: latitude.doubleValue,
+                                          longitude: longitude.doubleValue,
+                                          zoom: zoomLevel.floatValue)
     if map.isHidden {
       map.isHidden = false
       map.camera = camera
-    } else {
-      map.animate(to: camera)
-    }
-  }
-  
-  func updateCurrentLocation(latitude: NSNumber, longitude: NSNumber) {
-    let camera = GMSCameraPosition.camera(withLatitude: latitude,
-                                          longitude: longitude,
-                                          zoom: zoomLevel.floatValue)
-    updateLocation(camera: camera)
+    } else { map.animate(to: camera) }
   }
   
   @objc var onLocationUpdated: RCTDirectEventBlock?
@@ -74,8 +75,13 @@ extension MapView: GMSMapViewDelegate {
     marker?.map = nil
     marker = nil
     let changedPosition = CLLocationCoordinate2DMake(position.target.latitude, position.target.longitude)
+    let markerImage = UIImage(named: "sbox_pin")!.withRenderingMode(.alwaysTemplate)
+    let markerView = UIImageView(image: markerImage)
     marker = GMSMarker(position: changedPosition)
-    marker?.title = "Your position!"
+//    marker?.iconView = markerView
+//    marker?.iconView?.sizeToFit()
+    marker?.title = "Sayurbox"
+    marker?.snippet = "Selected position"
     marker?.map = mapView
   }
   
@@ -91,14 +97,6 @@ extension MapView: GMSMapViewDelegate {
 }
 
 extension MapView: CLLocationManagerDelegate {
-  
-  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    let location: CLLocation = locations.last!
-    let camera = GMSCameraPosition.camera(withLatitude: location.coordinate.latitude,
-                                          longitude: location.coordinate.longitude,
-                                          zoom: zoomLevel.floatValue)
-    updateLocation(camera: camera)
-  }
   
   func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
     switch status {

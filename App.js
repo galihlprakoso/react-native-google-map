@@ -1,13 +1,11 @@
 import React from 'react'
-import { StyleSheet, Text, View, requireNativeComponent } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
+import MapView from './MapView'
 
-const MapView = requireNativeComponent('MapView')
 
 export default () => {
   return (
-    <MapView
-      style={styles.container}
-    />
+    <MapView />
   )
 }
 
