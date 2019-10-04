@@ -6,6 +6,7 @@ import MapView from './MapView'
 export default () => {
   return (
     <MapView />
+    // <Text>TEST</Text>
   )
 }
 

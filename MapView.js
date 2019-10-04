@@ -1,5 +1,5 @@
-import React from 'react'
-import { StyleSheet, Text, View, requireNativeComponent } from 'react-native'
+import React, { useEffect } from 'react'
+import { StyleSheet, Text, View, requireNativeComponent, Platform, DeviceEventEmitter, PermissionsAndroid } from 'react-native'
 import PropTypes from 'prop-types'
 
 const RNMapView = requireNativeComponent('MapView')
@@ -26,6 +26,54 @@ const MapView = ({
     }
   }
 
+  //IOS
+  if(Platform.OS === 'ios') {
+    return (
+      <RNMapView
+        ref={e => mapRef = e}
+        style={[styles.container, style]}
+        defaultLatitude={defaultLatitude}
+        defaultLongitude={defaultLongitude}
+        zoomLevel={zoomLevel}
+        onLocationUpdated={onLocationUpdated}
+        onUserAllowed={onUserAllowed}
+        onUserDenied={onUserDenied}
+        onError={onError}
+      />
+    )
+  }
+
+  //Android
+  DeviceEventEmitter.addListener('onLocationUpdated', (data) => {
+    onLocationUpdated(data)
+  })
+
+  //Request permissions
+  async function requestLocationPermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: 'Izin akses lokasi',
+          message:
+            'Izinkan Sayurbox untuk mengakses lokasi anda.',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        onUserAllowed()
+      } else {
+        onUserDenied()
+      }
+    } catch (err) {
+      onError()
+    }
+  }
+
+  useEffect(() => {
+    requestLocationPermission()
+  },[])
+
   return (
     <RNMapView
       ref={e => mapRef = e}
@@ -33,10 +81,6 @@ const MapView = ({
       defaultLatitude={defaultLatitude}
       defaultLongitude={defaultLongitude}
       zoomLevel={zoomLevel}
-      onLocationUpdated={onLocationUpdated}
-      onUserAllowed={onUserAllowed}
-      onUserDenied={onUserDenied}
-      onError={onError}
     />
   )
 }
