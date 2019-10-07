@@ -1,0 +1,5 @@
+1. User with no internet connection in first load 
+   and internet coneection in the middle.
+2. User with internet connection and no internet in the middle
+3. User with GPS enabled on first load and than disable in the middle
+4. User with GPS disabled on first and enable in the middle.

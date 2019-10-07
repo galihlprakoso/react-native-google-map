@@ -1,86 +1,31 @@
-import React, { useEffect } from 'react'
-import { StyleSheet, Text, View, requireNativeComponent, Platform, DeviceEventEmitter, PermissionsAndroid } from 'react-native'
+import React from 'react'
+import { 
+  StyleSheet, 
+  Platform,
+  requireNativeComponent
+} from 'react-native'
 import PropTypes from 'prop-types'
+import useMapViewAndroidHook from './useMapViewAndroidHook'
+import useMapViewIOSHook from './useMapViewIOSHook'
 
 const RNMapView = requireNativeComponent('MapView')
 
-const MapView = ({
-  style,
-  defaultLatitude,
-  defaultLongitude,
-  zoomLevel,
-  onLocationUpdated,
-  onUserAllowed,
-  onUserDenied,
-  onError,
-}) => {
-  let mapRef
+const MapView = (props) => {
 
-  const updateCurrentLocation = (latitude, longitude) => {
-    if(mapRef) {
-      UIManager.dispatchViewManagerCommand(
-        findNodeHandle(mapRef),
-        UIManager["MapView"].Commands.updateCurrentLocation,
-        [latitude, longitude]
-      )
-    }
-  }
-
-  //IOS
-  if(Platform.OS === 'ios') {
-    return (
-      <RNMapView
-        ref={e => mapRef = e}
-        style={[styles.container, style]}
-        defaultLatitude={defaultLatitude}
-        defaultLongitude={defaultLongitude}
-        zoomLevel={zoomLevel}
-        onLocationUpdated={onLocationUpdated}
-        onUserAllowed={onUserAllowed}
-        onUserDenied={onUserDenied}
-        onError={onError}
-      />
-    )
-  }
-
-  //Android
-  DeviceEventEmitter.addListener('onLocationUpdated', (data) => {
-    onLocationUpdated(data)
-  })
-
-  //Request permissions
-  async function requestLocationPermission() {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Izin akses lokasi',
-          message:
-            'Izinkan Sayurbox untuk mengakses lokasi anda.',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        onUserAllowed()
-      } else {
-        onUserDenied()
-      }
-    } catch (err) {
-      onError()
-    }
-  }
-
-  useEffect(() => {
-    requestLocationPermission()
-  },[])
+  const { updateCurrentLocation, setMapRef } = 
+    Platform.OS === 'android' ? 
+      useMapViewAndroidHook(props) : 
+      useMapViewIOSHook()
+  
+  this.updateCurrentLocation = updateCurrentLocation
 
   return (
     <RNMapView
-      ref={e => mapRef = e}
-      style={[styles.container, style]}
-      defaultLatitude={defaultLatitude}
-      defaultLongitude={defaultLongitude}
-      zoomLevel={zoomLevel}
+      ref={e => setMapRef(e)}
+      style={[styles.container, props.style]}
+      defaultLatitude={props.defaultLatitude}
+      defaultLongitude={props.defaultLongitude}
+      zoomLevel={props.zoomLevel}          
     />
   )
 }
@@ -94,6 +39,7 @@ MapView.defaultProps = {
   onUserAllowed: () => {},
   onUserDenied: () => {},
   onError: () => {},
+  onProviderStatusChanged: () => {}
 }
 
 MapView.propTypes = {
@@ -105,6 +51,7 @@ MapView.propTypes = {
   onUserAllowed: PropTypes.func,
   onUserDenied: PropTypes.func,
   onError: PropTypes.func,
+  onProviderStatusChanged: PropTypes.func,
 }
 
 export default MapView
